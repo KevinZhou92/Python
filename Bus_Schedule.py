@@ -6,9 +6,6 @@ import time as counter
 import os
 import sys
 
-path = os.path.dirname(sys.argv[0])
-os.chdir(path)
-
 
 class TimeGetter():
 	def __init__(self, stop):
@@ -29,7 +26,7 @@ class TimeGetter():
 			print "The next bus", temp["Predictions"][0]["BusName"], "will come at" ,self.stop , ":",temp["Predictions"][0]["ArriveTime"]
 			return 
 		except urllib2.URLError, e:
-			print ("Can not get the time", e.reason)
+			print ("Cannot get the time", e.reason)
 			return
 
 
