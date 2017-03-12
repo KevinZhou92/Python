@@ -22,6 +22,7 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 import os
 from User_Getter import User_Getter
+import random
 
 cookieFile = 'zhihu_cookie.txt'
 
@@ -44,6 +45,7 @@ class Zhihu(object):
 		self.passwd = ''
 		self.url = 'https://www.zhihu.com/login/email'
 		self.target_page = ''
+		self.position = 0
 		print('''
 				############################################################
 				#                                                          #
@@ -128,148 +130,169 @@ class Zhihu(object):
 		'''
 			main entry for collecting user's profile including id, gender, education, career
 		'''
+		count = 0
 		self.cj.load()
 		user_list = []
 		# check the source of the data
 		if (text_path != None) :
 			with open(text_path, 'r') as source_list :
 				for line in source_list :
-					user_list.append(line)
+					user_list.append(line.split('\n')[0])
 				source_list.close()
 		else :
-			user_list = [1]
+			user_list = []
 
 		start_time = time.time()
+		while(len(user_list) > 0):
+			# this try except block is for resuming from the server' shutdown  
+			try :
+				for item in user_list :
+					start_time = time.time()
+					user_id = item
+					print('=Writing information of [', user_id,']...')
+					url = 'https://www.zhihu.com/api/v4/members/' + user_id + '?include=locations%2Cemployments%2Cgender%2Ceducations%2Cbusiness%2Cvoteup_count%2Cthanked_Count%2Cfollower_count%2Cfollowing_count%2Ccover_url%2Cfollowing_topic_count%2Cfollowing_question_count%2Cfollowing_favlists_count%2Cfollowing_columns_count%2Canswer_count%2Carticles_count%2Cpins_count%2Cquestion_count%2Ccommercial_question_count%2Cfavorite_count%2Cfavorited_count%2Clogs_count%2Cmarked_answers_count%2Cmarked_answers_text%2Cmessage_thread_token%2Caccount_status%2Cis_active%2Cis_force_renamed%2Cis_bind_sina%2Csina_weibo_url%2Csina_weibo_name%2Cshow_sina_weibo%2Cis_blocking%2Cis_blocked%2Cis_following%2Cis_followed%2Cmutual_followees_count%2Cvote_to_count%2Cvote_from_count%2Cthank_to_count%2Cthank_from_count%2Cthanked_count%2Cdescription%2Chosted_live_count%2Cparticipated_live_count%2Callow_message%2Cindustry_category%2Corg_name%2Corg_homepage%2Cbadge%5B%3F(type%3Dbest_answerer)%5D.topics'
+					req = request.Request(url)
+					raw_data = self.opener.open(req).read()
+					json_data = json.loads(raw_data)
+					
+					# get key and value
+					pic_url = json_data["avatar_url"].split('_')[0] + '_xll.jpg'
+					number_id = json_data["id"]
+					user_name = json_data["name"]
+					
+					# education
+					if ("educations" in json_data) :
+						if (len(json_data["educations"]) != 0) :
+							if ("school" in json_data["educations"][0]) : 
+								university = json_data["educations"][0]["school"]["name"]
+							else :
+								university = 'None'
+							if ("major" in json_data["educations"][0]) :
+								major = json_data["educations"][0]["major"]["name"]
+							else:
+								major = 'None'
+						else :
+							university = 'None' 
+							major = 'None' 
 
-		for item in user_list :
-			start_time = time.time()
-			user_id = item.split('\n')[0]
-			print('Writing information of [', user_id,']...')
-			url = 'https://www.zhihu.com/api/v4/members/' + user_id + '?include=locations%2Cemployments%2Cgender%2Ceducations%2Cbusiness%2Cvoteup_count%2Cthanked_Count%2Cfollower_count%2Cfollowing_count%2Ccover_url%2Cfollowing_topic_count%2Cfollowing_question_count%2Cfollowing_favlists_count%2Cfollowing_columns_count%2Canswer_count%2Carticles_count%2Cpins_count%2Cquestion_count%2Ccommercial_question_count%2Cfavorite_count%2Cfavorited_count%2Clogs_count%2Cmarked_answers_count%2Cmarked_answers_text%2Cmessage_thread_token%2Caccount_status%2Cis_active%2Cis_force_renamed%2Cis_bind_sina%2Csina_weibo_url%2Csina_weibo_name%2Cshow_sina_weibo%2Cis_blocking%2Cis_blocked%2Cis_following%2Cis_followed%2Cmutual_followees_count%2Cvote_to_count%2Cvote_from_count%2Cthank_to_count%2Cthank_from_count%2Cthanked_count%2Cdescription%2Chosted_live_count%2Cparticipated_live_count%2Callow_message%2Cindustry_category%2Corg_name%2Corg_homepage%2Cbadge%5B%3F(type%3Dbest_answerer)%5D.topics'
-			req = request.Request(url)
-			raw_data = self.opener.open(req).read()
-			json_data = json.loads(raw_data)
-			
-			# get key and value
-			pic_url = json_data["avatar_url"]
-			number_id = json_data["id"]
-			user_name = json_data["name"]
-			
-			# education
-			if ("educations" in json_data) :
-				if (len(json_data["educations"]) != 0) :
-					if ("school" in json_data["educations"][0]) : 
-						school = json_data["educations"][0]["school"]["name"]
 					else :
-						school = 'None'
-					if ("major" in json_data["educations"][0]) :
-						major = json_data["educations"][0]["major"]["name"]
-					else:
-						major = 'None'
-				else :
-					university = 'None' 
-					major = 'None' 
+						university = 'None' 
+						major = 'None' 
+					
+					# employments
+					if ("employments" in json_data) :
+						if (len(json_data["employments"]) != 0) :
+							if ("company" in json_data["employments"][0]) :
+								company = json_data["employments"][0]["company"]["name"]
+							else :
+								company = 'None'
+							if ("occupation" in json_data["employments"][0]) :
+								occupation = json_data["employments"][0]["job"]["name"]
+							else :
+								occupation = 'None'
+						else :
+							company = 'None' 
+						occupation = 'None' 
+					else : 
+						company = 'None' 
+						occupation = 'None' 
+					
+					# location
+					if ("locations" in json_data) :	
+						if (len(json_data["locations"]) != 0) :
 
-			else :
-				university = 'None' 
-				major = 'None' 
-			
-			# employments
-			if ("employments" in json_data) :
-				if (len(json_data["employments"]) != 0) :
-					if ("company" in json_data["employments"][0]) :
-						company = json_data["employments"][0]["company"]["name"]
+							location = json_data["locations"][0]["name"]
+						else :
+							location = 'None'
 					else :
-						company = 'None'
-					if ("occupation" in json_data["employments"][0]) :
-						occupation = json_data["employments"][0]["job"]["name"]
+						location = 'None'	
+					
+					# business
+					if ("business" in json_data ) :
+						industry = json_data["business"]["name"]
 					else :
-						occupation = 'None'
-				else :
-					company = 'None' 
-				occupation = 'None' 
-			else : 
-				company = 'None' 
-				occupation = 'None' 
-			
-			# location
-			if ("locations" in json_data) :	
-				if (len(json_data["locations"]) != 0) :
+						industry = 'None' 
+					
+					intro = json_data["headline"]
+					autobiography = json_data["description"]
+					user_type = json_data["type"]
+					follower_count = json_data["follower_count"]
+					following_count = json_data["following_count"]
+					answers_count = json_data["answer_count"]
+					articles_count = json_data["articles_count"]
+					
+					if (json_data["gender"] == 1) :
+						gender = 'male'
+					else :
+						gender = 'female'
 
-					location = json_data["locations"][0]["name"]
-				else :
-					location = 'None'
-			else :
-				location = 'None'	
-			
-			# business
-			if ("business" in json_data ) :
-				industry = json_data["business"]["name"]
-			else :
-				industry = 'None' 
-			
-			intro = json_data["headline"]
-			autobiography = json_data["description"]
-			user_type = json_data["type"]
-			follower_count = json_data["follower_count"]
-			following_count = json_data["following_count"]
-			answers_count = json_data["answer_count"]
-			articles_count = json_data["articles_count"]
-			
-			if (json_data["gender"] == 1) :
-				gender = 'male'
-			else :
-				gender = 'female'
+				
+					data = {
+					 		'id' :  number_id,
+							'user_id' : user_id,
+							'name' : user_name,
+							'gender' : gender,
+							'university' : university,
+							'major' : major,
+							'industry' : industry,
+							'company' : company,
+							'occupation' : occupation,
+							'location' : location,
+							'intro' : intro,
+							'autobiography' : autobiography,
+							'user_type' : str(user_type),
+							'follower_count' : str(follower_count),
+							'following_count' : str(following_count),
+							'answer-count' : str(answers_count),
+							'articles_count' : str(articles_count)
+							}
+				
+					# process folder
+					if not (os.path.exists(os.path.join('./data/' ,user_name))): # check if the folder exists
+						os.makedirs(os.path.join('./data/' ,user_name))
+					path = os.path.join('./data/' ,user_name) + '/'
+				
+					# generate store path
+					store_path = path + user_name
+					# write picture
+					with open(store_path + '.png', 'wb') as f:
+						f.write(self.bytes_getter(pic_url))
+						f.close()
+					
 
-		
-			data = {
-			 		'id' :  number_id,
-					'user_id' : user_id,
-					'name' : user_name,
-					'gender' : gender,
-					'university' : university,
-					'major' : major,
-					'industry' : industry,
-					'company' : company,
-					'occupation' : occupation,
-					'location' : location,
-					'intro' : intro,
-					'autobiography' : autobiography,
-					'user_type' : str(user_type),
-					'follower_count' : str(follower_count),
-					'following_count' : str(following_count),
-					'answer-count' : str(answers_count),
-					'articles_count' : str(articles_count)
-					}
-			print(data)
-		
-			# process folder
-			if not (os.path.exists(os.path.join('./data/' ,user_name))): # check if the folder exists
-				os.makedirs(os.path.join('./data/' ,user_name))
-			path = os.path.join('./data/' ,user_name) + '/'
-		
-			# generate store path
-			store_path = path + user_name
-			# write picture
-			with open(store_path + '.png', 'wb') as f:
-				f.write(self.bytes_getter(pic_url))
-				f.close()
+					target_page_url = 'https://www.zhihu.com/people/' + user_id + '/activities'
+					# write target_page
+					with open(store_path +'.html', 'wb') as f:
+						f.write(self.bytes_getter(target_page_url))
+						f.close()
+
+					with open(store_path + '.txt', 'w', encoding='utf-8') as f:
+						for item, value in data.items():
+							line = json.dumps(item + ":" + value, ensure_ascii=False) + "\n"
+							f.write(line)
+							#f.write(json.dumps(data, ensure_ascii=False))
+						f.close()
+					count += 1
+					print('Wrote Successfully! Time consumed :',time.time() - start_time,"seconds. Crawled ",count, "users till now.")
+					if (count % 10 == 0) :
+						cool_start = time.time()
+						cool_down_time = random.randint(0, 10)
+						print('#' * 20,'Cooling down for',cool_down_time,' seconds.','#' * 20)
+						time.sleep(cool_down_time)
+					time.sleep(1.5)
+					# record the position before a exception happens
+					self.position = user_id
+
+			except Exception as e:
+				print('Error! ', e)
+
+			# recover from exception, resume crawling from last user	
+			finally :
+				index = user_list.index(self.position) + 1
+				user_list = user_list[index:]
+				time.sleep(10)
+				print('#'*20,'Resuming from server shutdown','#'*20)
 			
-
-			target_page_url = 'https://www.zhihu.com/people/' + user_id + '/activities'
-			# write target_page
-			with open(store_path +'.html', 'wb') as f:
-				f.write(self.bytes_getter(target_page_url))
-				f.close()
-
-			with open(store_path + '.txt', 'w', encoding='utf-8') as f:
-				for item, value in data.items():
-					line = json.dumps(item + ":" + value, ensure_ascii=False) + "\n"
-					f.write(line)
-					#f.write(json.dumps(data, ensure_ascii=False))
-				f.close()
-				print('Write Successfully! Time consumed :', time.time() - start_time)
-
 	# for retrieving document		
 	def unicode_getter(self, target_url) :
 		return self.opener.open(target_url).read().decode('utf-8')
@@ -283,6 +306,5 @@ class Zhihu(object):
 start_time = time.time()
 Zhihu = Zhihu()
 Zhihu.profile_collector('./data/user_list.txt')
-time.sleep(0.2)	
 end_time = time.time()
 print("[Totally elapsed: " , (end_time - start_time), " seconds.]")
