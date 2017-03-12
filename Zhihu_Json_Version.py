@@ -142,7 +142,7 @@ class Zhihu(object):
 		else :
 			user_list = []
 
-		start_time = time.time()
+		initial_time = time.time()
 		while(len(user_list) > 0):
 			# this try except block is for resuming from the server' shutdown  
 			try :
@@ -253,7 +253,7 @@ class Zhihu(object):
 					path = os.path.join('./data/' ,user_name) + '/'
 				
 					# generate store path
-					store_path = path + user_name
+					store_path = path + user_id
 					# write picture
 					with open(store_path + '.png', 'wb') as f:
 						f.write(self.bytes_getter(pic_url))
@@ -273,7 +273,8 @@ class Zhihu(object):
 							#f.write(json.dumps(data, ensure_ascii=False))
 						f.close()
 					count += 1
-					print('Wrote Successfully! Time consumed :',time.time() - start_time,"seconds. Crawled ",count, "users till now.")
+					print('Wrote Successfully! Time consumed :','%.2f'%(time.time() - start_time),"seconds. Crawled ",count, "users till now.")
+					print('[Total time:', '%.2f'%(time.time() - initial_time),'seconds]')
 					if (count % 10 == 0) :
 						cool_start = time.time()
 						cool_down_time = random.randint(0, 10)
@@ -307,4 +308,4 @@ start_time = time.time()
 Zhihu = Zhihu()
 Zhihu.profile_collector('./data/user_list.txt')
 end_time = time.time()
-print("[Totally elapsed: " , (end_time - start_time), " seconds.]")
+print("[Totally elapsed: " , '%.2f'%(end_time - start_time), " seconds.]")
