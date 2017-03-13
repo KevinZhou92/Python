@@ -219,11 +219,10 @@ class Zhihu(object):
 					#f.write(json.dumps(data, ensure_ascii=False))
 				f.close()
 		    
-			print('Wrote Successfully! Time consumed :','%.2f'%(time.time() - start_time),"seconds.")
+			#print('Wrote Successfully! Time consumed :','%.2f'%(time.time() - start_time),"seconds.")
 		except Exception as e :
-			print('Error! ',e)
-		finally :
-			pass	
+			pass
+		
 		# record the position before a exception happens
 
 	# for retrieving document		
@@ -262,9 +261,13 @@ def process_crawler():
 		for p in process :
 			p.join() # waiting for process to join
 			count += 1
-			print('Already crawled : [', count , '] Users.>')
-		time.sleep(random.randint(0, 10))
-		print('[######### Time elapse :', '%.2f'%(time.time() - start_time), ' seconds. #######]')
+			if (count % 100 == 0) :
+				print('[######### Each operation cost :', '%.2f'%((time.time() - start_time) / count), ' seconds. ##########]')
 
+		process = []
+		print('Already crawled : [', count , '] Users.>')
+		time.sleep(random.randint(0, 2))
+		print('[######### Time elapse :', '%.2f'%(time.time() - start_time), ' seconds. #########]')
+		
 process_crawler()
 print("[Totally elapsed: " , '%.2f'%(end_time - start_time), " seconds.]")
