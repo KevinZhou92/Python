@@ -263,6 +263,7 @@ def process_crawler():
 			p.join() # waiting for process to join
 			count += 1
 			print('Already crawled : [', count , '] Users.>')
+		time.sleep(random.randint(0, 10))
 		print('[######### Time elapse :', '%.2f'%(time.time() - start_time), ' seconds. #######]')
 
 process_crawler()
