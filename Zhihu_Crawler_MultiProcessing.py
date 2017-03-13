@@ -238,20 +238,41 @@ class Zhihu(object):
 Zhihu = Zhihu()
 user_list = []
 
+size = 0
 # read in initial user_list
-with open('./user_list.txt', 'r') as f:
+with open('./user_list.txt', 'r') as f :
 	for line in f :
 		user_list.append(line.split('\n')[0])
 	f.close()
+	size = len(user_list) # record the number of users we have in current list
 
+
+# Main entry
 def process_crawler():
+	global user_list
 	count = 0
 	process = []
 	start_time = time.time()
 	num_cpus = multiprocessing.cpu_count()
 	print('Starting number of process : ', num_cpus)
 
-	while (len(user_list) > 0) :
+	while (len(user_list) >= 0) :
+		if (len(user_list) == 0) :
+			read_flag = True # Check if user_list size changed
+			while (read_flag) :		
+				with open('./user_list.txt', 'r') as f :
+					for line in f :
+						user_list.append(line.split('\n')[0])
+					f.close()
+					if (size == len(user_list)): # check if the user_list is the same as we read
+						flag = True
+					else :
+						temp = len(user_list) # store the end position of the array
+						read_flag = False
+					user_list = user_list[size:]
+					size = temp
+					print('|--------------User List Updated--------------|\nStart from [', user_list[0],'].........')
+
 		for i in range(8) :
 			p = multiprocessing.Process(target=Zhihu.profile_collector,args=(user_list.pop(0),)) # create a process
 			p.daemon = True
@@ -262,12 +283,12 @@ def process_crawler():
 			p.join() # waiting for process to join
 			count += 1
 			if (count % 100 == 0) :
-				print('[######### Each operation cost :', '%.2f'%((time.time() - start_time) / count), ' seconds. ##########]')
+				print('[############## Each operation cost :', '%.2f'%((time.time() - start_time) / count), ' seconds. ###############]')
 
 		process = []
-		print('Already crawled : [', count , '] Users.>')
+		print('|--------------Already crawled : [', count , '] Users---------------|\n Strarting From [', user_list[0],']')
 		time.sleep(random.randint(0, 2))
-		print('[######### Time elapse :', '%.2f'%(time.time() - start_time), ' seconds. #########]')
+		print('[############## Time elapse :', '%.2f'%(time.time() - start_time), 'seconds. ##############]')
 		
 process_crawler()
 print("[Totally elapsed: " , '%.2f'%(end_time - start_time), " seconds.]")
