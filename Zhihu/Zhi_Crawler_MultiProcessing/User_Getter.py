@@ -58,7 +58,7 @@ class User_Getter(object):
 							queue.append(item['url_token'])
 							
 							# write operation for every [constant number] record in case of shutdown
-							if (len(user_list) % 8000 == 0):
+							if (len(user_list) % 80 == 0):
 								with open('./user_list.txt', 'w') as f :
 									for id in user_list :
 										f.write(id)
