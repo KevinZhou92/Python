@@ -21,10 +21,9 @@ class User_Getter(object):
         "accept":"application/json, text/plain, */*",
 		"Accept-Encoding":"gzip, deflate, sdch, br",
 		"Accept-Language":"en-GB,en;q=0.8,en-US;q=0.6,zh-CN;q=0.4,zh;q=0.2",
-		"authorization":"oauth c3cef7c66a1843f8b3a9e6a1e3160e20",
+		"authorization":"",
 		"Connection":"keep-alive",
 		"Host":"www.zhihu.com",
-		"Referer": "https://www.zhihu.com/people/he-xie-52-94/asks",
 		"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"		    
     }
 
