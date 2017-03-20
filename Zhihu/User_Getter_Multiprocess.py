@@ -81,7 +81,7 @@ class User_Getter(object):
 	
 if __name__ == '__main__':
 	start_time = time.time()	
-	test_client = User_Getter('https://www.zhihu.com/people/leepie/activities')	
+	test_client = User_Getter('https://www.zhihu.com/people/xiao-guai-shou-2/activities')	
 	print("[Totally retrieved : ", len(test_client.urls()), " records.]")
 	end_time = time.time()	
 	print("[Program elapsed : " , '%.2f'%(end_time - start_time), " seconds.]")

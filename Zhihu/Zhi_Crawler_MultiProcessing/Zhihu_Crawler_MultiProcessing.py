@@ -192,7 +192,8 @@ class Zhihu(object):
 					'answer-count' : str(answers_count),
 					'articles_count' : str(articles_count)
 					}
-		
+			informations = ['id', 'user_id', 'name', 'gender', 'university', 'major', 'industry', 'company', 'occupation', 'location', 'intro', 'autobiography', 'user_type', 'follower_count','following_count','answer-count' ,'articles_count' ]
+			
 			# process folder
 			if not (os.path.exists(os.path.join('./data/' ,user_name))): # check if the folder exists
 				os.makedirs(os.path.join('./data/' ,user_name))
@@ -200,12 +201,12 @@ class Zhihu(object):
 			
 			# generate store path
 			store_path = path + user_id
+			
 			# write picture
 			with open(store_path + '.png', 'wb') as f:
 				f.write(self.bytes_getter(pic_url))
 				f.close()
 			
-
 			target_page_url = 'https://www.zhihu.com/people/' + user_id + '/activities'
 			# write target_page
 			with open(store_path +'.html', 'wb') as f:
@@ -213,8 +214,8 @@ class Zhihu(object):
 				f.close()
 
 			with open(store_path + '.txt', 'w', encoding='utf-8') as f:
-				for item, value in data.items():
-					line = json.dumps(item + ":" + value, ensure_ascii=False) + "\n"
+				for item in informations:
+					line = json.dumps(item + ":" + data[item], ensure_ascii=False) + "\n"
 					f.write(line)
 					#f.write(json.dumps(data, ensure_ascii=False))
 				f.close()
@@ -234,20 +235,6 @@ class Zhihu(object):
 		return self.opener.open(target_url).read()
 
 
-# record ruuning time of program
-Zhihu = Zhihu()
-user_list = []
-
-size = 0
-# read in initial user_list
-with open('./data/user_list.txt', 'r') as f :
-	for line in f :
-		user_list.append(line.split('\n')[0])
-	f.close()
-	size = len(user_list) # record the number of users we have in current list
-
-
-# Main entry
 def process_crawler():
 	global user_list
 	count = 0
@@ -265,12 +252,12 @@ def process_crawler():
 						user_list.append(line.split('\n')[0])
 					f.close()
 					if (size == len(user_list)): # check if the user_list is the same as we read
-						flag = True
+						time.sleep(100)
 					else :
 						temp = len(user_list) # store the end position of the array
 						read_flag = False
-					user_list = user_list[size:]
-					size = temp
+						user_list = user_list[size:]
+						size = temp
 					print('|--------------User List Updated--------------|\nStart from [', user_list[0],'].........')
 
 		for i in range(4) :
@@ -280,7 +267,7 @@ def process_crawler():
 			process.append(p)
 
 		for p in process:
-			p.join() # waiting for process to join
+			p.join() # waiting for process to join but this will cause faster process to wait for slower process 
 			count += 1
 			if (count % 60 ==0) :
 				print('[++++++++++++++ Each operation cost :', '%.2f'%((time.time() - start_time) / count), ' seconds. ++++++++++++++]')
@@ -291,5 +278,19 @@ def process_crawler():
 		print(' Seelping..........')
 		print('[############## Time elapse :', '%.2f'%(time.time() - start_time), 'seconds. ##############]')
 		
+
+# record ruuning time of program
+Zhihu = Zhihu()
+user_list = []
+
+size = 0
+# read in initial user_list
+with open('./data/user_list.txt', 'r') as f :
+	for line in f :
+		user_list.append(line.split('\n')[0])
+	f.close()
+	size = len(user_list) # record the number of users we have in current list
+
+# Main entry
 process_crawler()
 print("[Totally elapsed: " , '%.2f'%(end_time - start_time), " seconds.]")
