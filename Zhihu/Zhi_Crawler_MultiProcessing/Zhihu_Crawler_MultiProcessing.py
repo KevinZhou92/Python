@@ -100,7 +100,7 @@ class Zhihu(object):
 			req = request.Request(url)
 			raw_data = self.opener.open(req).read().decode('utf-8')
 			json_data = json.loads(raw_data)
-			
+		
 			# get key and value
 			pic_url = json_data["avatar_url"].split('_')[0] + '_xll.jpg'
 			number_id = json_data["id"]
@@ -236,7 +236,7 @@ class Zhihu(object):
 
 
 def process_crawler():
-	global user_list
+	global user_list,size
 	count = 0
 	process = [] # list of process
 	start_time = time.time()
