@@ -41,8 +41,8 @@ class Zhihu(object):
 		self.pool = Pool(4)
 		self.cj = Cookie.MozillaCookieJar(cookieFile)
 		self.opener = request.build_opener(request.HTTPCookieProcessor(self.cj), RedirectHandler())
-		self.client_info = ''
-		self.passwd = ''
+		self.client_info = 'monsterzpc@gmail.com'
+		self.passwd = 'Zpc920515'
 		self.url = 'https://www.zhihu.com/login/email'
 		self.target_page = ''
 		self.position = 0
@@ -54,7 +54,6 @@ class Zhihu(object):
 				############################################################
 			   ''')
 		
-
 	def get_xsrf(self) :
 		'''
 			Get a special dynamic string for login
@@ -63,6 +62,13 @@ class Zhihu(object):
 		pattern = re.compile('<input type="hidden" name="_xsrf" value="(.*)"/>')
 		_xsrf = re.findall(pattern, login_target_page.read().decode('utf-8'))[0]
 		return _xsrf
+	
+	def get_captcha_url(self):
+	    url =  'https://www.zhihu.com' + '/captcha.gif?r=' + str(int(time.time())) + '&type=login'
+	    f = request.urlopen(url)
+	    with open('./cap.png', 'wb') as image:
+	    	image.write(f.read())
+	    	image.close()
 
 	def login(self):
 		'''
@@ -73,6 +79,10 @@ class Zhihu(object):
 			self.client_info = input('请输入账号:')
 			self.passwd = getpass('请输入密码:')
 
+		self.get_captcha_url()
+
+		captcha = input('请输入验证码：')
+
 		if (self.client_info.find("@") != -1) :
 			print('''正在使用邮箱登录...\n用户名:'''  + self.client_info+ '\n' + '密码 : ' + len(self.passwd) * '*'+ '\n' )
 		else :
@@ -81,9 +91,10 @@ class Zhihu(object):
 
 		form = {'_xsrf' : self.get_xsrf(), 
 				'password' : self.passwd, 
-				'remember_me': 'true',
-				'email' : self.client_info }
-		
+				'email' : self.client_info,
+				'captcha': captcha }
+		print(form)
+
 		try:
 			req = request.Request(self.url, parse.urlencode(form).encode('utf-8'))
 			f = self.opener.open(req)
@@ -305,6 +316,7 @@ class Zhihu(object):
 # record ruuning time of program
 start_time = time.time()
 Zhihu = Zhihu()
-Zhihu.profile_collector('./user_list.txt')
+Zhihu.login()
+#Zhihu.profile_collector('./user_list.txt')
 end_time = time.time()
 print("[Totally elapsed: " , '%.2f'%(end_time - start_time), " seconds.]")
