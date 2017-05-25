@@ -260,9 +260,8 @@ def process_crawler():
 						size = temp
 					print('|--------------User List Updated--------------|\nStart from [', user_list[0],'].........')
 
-		for i in range(4) :
+		for i in range(8) :
 			p = multiprocessing.Process(target=Zhihu.profile_collector,args=(user_list.pop(0),)) # create a process
-			p.daemon = True
 			p.start()
 			process.append(p)
 
